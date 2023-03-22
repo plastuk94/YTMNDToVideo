@@ -1,7 +1,6 @@
 import urllib.request
 import os
 import json
-import tkinter
 
 
 def download_url(url, filename, mode="text"):
@@ -44,11 +43,6 @@ def main():
 
     download_url(image_url, image_url_file, "binary")
     download_url(sound_url, sound_url_file, "binary")
-
-    root = tkinter.Tk()
-
-    root.lift
-    root.withdraw
 
     os.system(
         "ffmpeg -i " + image_url_file + " -movflags faststart -pix_fmt yuv420p -vf \"scale = trunc(iw / 2) * 2:trunc("
