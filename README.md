@@ -15,4 +15,6 @@ Thanks to https://github.com/philleif/ytmnd-to-tiktok for showing how it can be 
 
 -Could add the option of passing URL as an argument
 
+-Could add a Tkinter "save file" dialog on where to save the file
+
 -Image / audio seem to sync alright on most videos, but I have seen a few with issues.
