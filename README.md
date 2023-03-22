@@ -3,6 +3,9 @@ Converts YTMNDs to basic videos (MP4)
 
 Thanks to https://github.com/philleif/ytmnd-to-tiktok for showing how it can be done.
 
+# Requirements
+FFmpeg must be installed and in your PATH variable.
+
 # How to Use
 Enter the entire URL, e.g. "https://epicgeordi.ytmnd.com/" and press Enter.
 

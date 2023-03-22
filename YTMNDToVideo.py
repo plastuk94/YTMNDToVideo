@@ -48,7 +48,7 @@ def main():
         "ffmpeg -i " + image_url_file + " -movflags faststart -pix_fmt yuv420p -vf \"scale = trunc(iw / 2) * 2:trunc("
                                         "ih / 2) * 2\" -y video.mp4")
     os.system(
-        "ffmpeg -stream_loop -1 -i video.mp4 -i " + sound_url_file + " -c copy -map 0:v:0 -map 1:a:0 -shortest -y "
+        "ffmpeg -stream_loop -1 -i video.mp4 -i " + sound_url_file + " -c:a aac -b:a 128k -shortest -y "
                                                                      "\"output.mp4\"")
 
     for file in [image_url_file, sound_url_file, html_filename, json_filename, "video.mp4"]:
