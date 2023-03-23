@@ -1,6 +1,25 @@
-import urllib.request
-import os
 import json
+import mmap
+import os
+import subprocess
+import sys
+import urllib.request
+
+
+def duration_check(filename):
+    duration = subprocess.check_output(f"ffprobe -i {filename} -show_entries format=duration -v quiet -of csv=\"p=0\"")
+    return float(duration)
+
+
+def loop_check(gif_filename):
+    with open(gif_filename, 'rb') as gif:
+        with mmap.mmap(gif.fileno(), 0, access=mmap.ACCESS_READ) as mf:
+            # Locate GIF application extension to see how many times to loop
+            offset = mf.find(b'NETSCAPE2.0')
+            mf.seek(offset + 13)
+            loop_bytes = mf.read(2)
+            return int.from_bytes(loop_bytes, byteorder=sys.byteorder)
+    return 0
 
 
 def download_url(url, filename, mode="text"):
@@ -44,12 +63,23 @@ def main():
     download_url(image_url, image_url_file, "binary")
     download_url(sound_url, sound_url_file, "binary")
 
-    os.system(
-        "ffmpeg -i " + image_url_file + " -movflags faststart -pix_fmt yuv420p -vf \"scale = trunc(iw / 2) * 2:trunc("
-                                        "ih / 2) * 2\" -y video.mp4")
-    os.system(
-        "ffmpeg -stream_loop -1 -i video.mp4 -i " + sound_url_file + " -c:a aac -b:a 128k -shortest -y "
-                                                                     "\"output.mp4\"")
+    loop = loop_check(image_url_file)
+
+    if loop == 0:
+        audio_duration = duration_check(sound_url_file)
+        os.system(
+            f"ffmpeg -i {image_url_file} -movflags faststart -pix_fmt yuv420p -vf \"tpad=stop_mode=clone:stop_duration="
+            f"{audio_duration}, scale = trunc(iw / 2) * 2:trunc(ih / 2) * 2\" -y video.mp4")
+        os.system(
+            f"ffmpeg -i video.mp4 -i {sound_url_file} -c:a aac -b:a 128k -shortest -y "
+            "\"output.mp4\"")
+    else:
+        os.system(
+            f"ffmpeg -i {image_url_file} -movflags faststart -pix_fmt yuv420p -vf \"scale = trunc(iw / 2) * 2:trunc("
+            "ih / 2) * 2\" -y video.mp4")
+        os.system(
+            f"ffmpeg -stream_loop {str(loop)} -i video.mp4 -i {sound_url_file} -c:a aac -b:a 128k -shortest -y "
+            "\"output.mp4\"")
 
     for file in [image_url_file, sound_url_file, html_filename, json_filename, "video.mp4"]:
         os.remove(file)
