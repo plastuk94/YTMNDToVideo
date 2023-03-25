@@ -65,7 +65,18 @@ def main():
 
     loop = loop_check(image_url_file)
 
-    if loop == 0:
+    # Run non-animated images as long as the audio.
+    if image_ext != "gif":
+        audio_duration = duration_check(sound_url_file)
+        os.system(
+            f"ffmpeg -i {image_url_file} -movflags faststart -pix_fmt yuv420p -vf \"tpad=stop_mode=clone:stop_duration="
+            f"{audio_duration}, scale = trunc(iw / 2) * 2:trunc(ih / 2) * 2\" -y video.mp4")
+        os.system(
+            f"ffmpeg -i video.mp4 -i {sound_url_file} -c:a aac -b:a 128k -y "
+            "\"output.mp4\"")
+
+    # Run non-looping GIFs as long as the audio, but have to explicitly give duration.
+    elif loop == 0:
         audio_duration = duration_check(sound_url_file)
         os.system(
             f"ffmpeg -i {image_url_file} -movflags faststart -pix_fmt yuv420p -vf \"tpad=stop_mode=clone:stop_duration="
@@ -73,6 +84,7 @@ def main():
         os.system(
             f"ffmpeg -i video.mp4 -i {sound_url_file} -c:a aac -b:a 128k -shortest -y "
             "\"output.mp4\"")
+    # Run only as long as it needs to loop for the audio.
     else:
         os.system(
             f"ffmpeg -i {image_url_file} -movflags faststart -pix_fmt yuv420p -vf \"scale = trunc(iw / 2) * 2:trunc("
